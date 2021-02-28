@@ -6,7 +6,7 @@ import com.wenance.bitcoinprices.model.BitcoinPrice;
 import com.wenance.bitcoinprices.repository.BitcoinPriceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -27,12 +27,12 @@ public class BuenBitClient implements CommandLineRunner {
     @Autowired
     private WebClient client;
 
-    @Value( "${buenbit.url}" )
-    private String buenBitUrl;
+    //@Value( "${buenbit.url}" )
+    //private String buenBitUrl;
 
     public Mono<BitcoinDetail> getBitcoinPrices(long maxNumRetries){
         return client.get()
-                .uri(buenBitUrl)
+                .uri("https://be.buenbit.com/api/market/tickers/")
                 .retrieve()
                 .bodyToMono(BitcoinInfo.class)
                 .map(bitcoinInfo -> bitcoinInfo.getObject().getBtcars())
@@ -43,6 +43,7 @@ public class BuenBitClient implements CommandLineRunner {
     @Override
     public void run(String... args) {
         //TODO ver que función usar para que empiece ejecutando sin esperar los 10 segundos
+        log.info("ENTRE ACAAAAA333");
         Flux<LocalDateTime> localDateTimeFlux = Flux.interval(Duration.ofSeconds(10))
                 .map(t -> LocalDateTime.now());
 

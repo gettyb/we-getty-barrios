@@ -46,6 +46,7 @@ public class BuenBitClient implements CommandLineRunner {
 
         Flux<BitcoinDetail> fluxCallApi= Flux.defer( () -> getBitcoinPrices(5)).repeat();
         //TODO eliminar take(3)
-        localDateTimeFlux.zipWith(fluxCallApi, (timestamp, bitcoinPriceDetail) -> repository.save(new BitcoinPrice(timestamp, bitcoinPriceDetail))).take(3).subscribe(System.out::println);
+        localDateTimeFlux.zipWith(fluxCallApi, (timestamp, bitcoinPriceDetail) -> repository.save(new BitcoinPrice(timestamp, bitcoinPriceDetail))
+                .subscribe()).take(3).subscribe();
     }
 }

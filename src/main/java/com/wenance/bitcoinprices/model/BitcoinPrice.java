@@ -1,5 +1,6 @@
 package com.wenance.bitcoinprices.model;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -9,6 +10,9 @@ import java.time.LocalDateTime;
 public class BitcoinPrice {
 
     //TODO ver de sustituir por lombok
+    @Id
+    private String id;
+
     @Indexed(unique=true)
     private LocalDateTime timestamp;
     private BitcoinDetail btcarsDetail;

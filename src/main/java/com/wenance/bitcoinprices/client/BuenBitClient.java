@@ -6,6 +6,7 @@ import com.wenance.bitcoinprices.model.BitcoinPrice;
 import com.wenance.bitcoinprices.repository.BitcoinPriceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -26,11 +27,12 @@ public class BuenBitClient implements CommandLineRunner {
     @Autowired
     private WebClient client;
 
+    @Value( "${buenbit.url}" )
+    private String buenBitUrl;
 
-    // TODO quitar url harcodeada
     public Mono<BitcoinDetail> getBitcoinPrices(long maxNumRetries){
         return client.get()
-                .uri("https://be.buenbit.com/api/market/tickers/")
+                .uri(buenBitUrl)
                 .retrieve()
                 .bodyToMono(BitcoinInfo.class)
                 .map(bitcoinInfo -> bitcoinInfo.getObject().getBtcars())
@@ -45,8 +47,8 @@ public class BuenBitClient implements CommandLineRunner {
                 .map(t -> LocalDateTime.now());
 
         Flux<BitcoinDetail> fluxCallApi= Flux.defer( () -> getBitcoinPrices(5)).repeat();
-        //TODO eliminar take(3)
+        //TODO eliminar take(10)
         localDateTimeFlux.zipWith(fluxCallApi, (timestamp, bitcoinPriceDetail) -> repository.save(new BitcoinPrice(timestamp, bitcoinPriceDetail))
-                .subscribe()).take(3).subscribe();
+                .subscribe()).take(10).subscribe();
     }
 }

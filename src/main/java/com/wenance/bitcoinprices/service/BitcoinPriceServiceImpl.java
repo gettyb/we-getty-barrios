@@ -26,6 +26,7 @@ public class BitcoinPriceServiceImpl  implements IBitcoinPriceService {
     }
 
     @Override
+    //Todo ver de devolver una excepción de que no existe
     public Flux<BitcoinPrice> retrieveByTimestamp(LocalDateTime timestamp, Pageable pageable) {
         return repository.findByTimestamp(timestamp, pageable);
     }

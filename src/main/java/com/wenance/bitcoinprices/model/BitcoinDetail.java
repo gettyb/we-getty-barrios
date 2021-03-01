@@ -1,12 +1,14 @@
 package com.wenance.bitcoinprices.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class BitcoinDetail{
     //TODO ver como cambiar strategy en el parseo Jackson
     private String currency;

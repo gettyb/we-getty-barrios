@@ -25,19 +25,19 @@ public class BitcoinPriceController {
     private IBitcoinPriceService iBitcoinPriceService;
 
     @GetMapping
-    //TODO falta permitir que no envie nada y tome el default
-    public Flux<BitcoinPrice> retrieve(@RequestParam("page") int pageIndex,
-                                                       @RequestParam("size") int pageSize){
-        log.info("Retrieving All Bitcoin Prices with page {} and size {}", pageIndex, pageSize);
-        return iBitcoinPriceService.retrieveAll(PageRequest.of(pageIndex, pageSize));
+    public Flux<BitcoinPrice> retrieve(@RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "10") int size){
+        log.info("Retrieving All Bitcoin Prices with page {} and size {}", page, size);
+        return iBitcoinPriceService.retrieveAll(PageRequest.of(page, size));
     }
     @GetMapping("/{timestamp}")
-    public Flux<BitcoinPrice> retrieveByTimestamp(@PathVariable
-                                                                        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                                                                                LocalDateTime timestamp){
+    public Flux<BitcoinPrice> retrieveByTimestamp( @RequestParam(defaultValue = "0") int page,
+                                                   @RequestParam(defaultValue = "1") int size,
+                                                  @PathVariable
+                                                  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                                                          LocalDateTime timestamp){
         log.info("Retrieving Bitcoin Price by Timestamp: "+ timestamp.format(DateTimeFormatter.ISO_DATE_TIME));
-        //TODO revisar paginación
-        return iBitcoinPriceService.retrieveByTimestamp(timestamp,PageRequest.of(0, 1))
+        return iBitcoinPriceService.retrieveByTimestamp(timestamp,PageRequest.of(page, size))
                 .switchIfEmpty(Mono.error(new TimestampNotFound()));
 
     }

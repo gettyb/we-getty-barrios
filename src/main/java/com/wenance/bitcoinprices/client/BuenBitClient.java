@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 
 @Component
 @Slf4j
+@Profile("!test")
 public class BuenBitClient implements CommandLineRunner {
 
     @Autowired
@@ -43,6 +45,7 @@ public class BuenBitClient implements CommandLineRunner {
     @Override
     public void run(String... args) {
         //TODO ver que función usar para que empiece ejecutando sin esperar los 10 segundos
+        log.info("Entre acaaa");
         Flux<LocalDateTime> localDateTimeFlux = Flux.interval(Duration.ofSeconds(10))
                 .map(t -> LocalDateTime.now());
 

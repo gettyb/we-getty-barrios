@@ -6,7 +6,7 @@ import com.wenance.bitcoinprices.model.BitcoinPrice;
 import com.wenance.bitcoinprices.repository.BitcoinPriceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -27,12 +27,12 @@ public class BuenBitClient implements CommandLineRunner {
     @Autowired
     private WebClient client;
 
-    //@Value( "${buenbit.url}" )
-    //private String buenBitUrl;
+    @Value( "${buenbit.url}" )
+    private String buenBitUrl;
 
     public Mono<BitcoinDetail> getBitcoinPrices(long maxNumRetries){
         return client.get()
-                .uri("https://be.buenbit.com/api/market/tickers/")
+                .uri(buenBitUrl)
                 .retrieve()
                 .bodyToMono(BitcoinInfo.class)
                 .map(bitcoinInfo -> bitcoinInfo.getObject().getBtcars())
@@ -43,13 +43,11 @@ public class BuenBitClient implements CommandLineRunner {
     @Override
     public void run(String... args) {
         //TODO ver que función usar para que empiece ejecutando sin esperar los 10 segundos
-        log.info("ENTRE ACAAAAA333");
         Flux<LocalDateTime> localDateTimeFlux = Flux.interval(Duration.ofSeconds(10))
                 .map(t -> LocalDateTime.now());
 
         Flux<BitcoinDetail> fluxCallApi= Flux.defer( () -> getBitcoinPrices(5)).repeat();
-        //TODO eliminar take(10)
         localDateTimeFlux.zipWith(fluxCallApi, (timestamp, bitcoinPriceDetail) -> repository.save(new BitcoinPrice(timestamp, bitcoinPriceDetail))
-                .subscribe()).take(10).subscribe();
+                .subscribe()).subscribe();
     }
 }

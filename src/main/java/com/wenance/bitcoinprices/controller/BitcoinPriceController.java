@@ -1,12 +1,12 @@
 package com.wenance.bitcoinprices.controller;
 
+import com.wenance.bitcoinprices.exception.TimestampNotFound;
 import com.wenance.bitcoinprices.model.BitcoinPrice;
 import com.wenance.bitcoinprices.service.IBitcoinPriceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -26,24 +26,26 @@ public class BitcoinPriceController {
 
     @GetMapping
     //TODO falta permitir que no envie nada y tome el default
-    public ResponseEntity<Flux<BitcoinPrice>> retrieve(@RequestParam("page") int pageIndex,
+    public Flux<BitcoinPrice> retrieve(@RequestParam("page") int pageIndex,
                                                        @RequestParam("size") int pageSize){
         log.info("Retrieving All Bitcoin Prices with page {} and size {}", pageIndex, pageSize);
-        return ResponseEntity.ok(iBitcoinPriceService.retrieveAll(PageRequest.of(pageIndex, pageSize)));
+        return iBitcoinPriceService.retrieveAll(PageRequest.of(pageIndex, pageSize));
     }
     @GetMapping("/{timestamp}")
-    public ResponseEntity<Flux<BitcoinPrice>> retrieveByTimestamp(@PathVariable
+    public Flux<BitcoinPrice> retrieveByTimestamp(@PathVariable
                                                                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                                                                                 LocalDateTime timestamp){
         log.info("Retrieving Bitcoin Price by Timestamp: "+ timestamp.format(DateTimeFormatter.ISO_DATE_TIME));
         //TODO revisar paginación
-        return ResponseEntity.ok(iBitcoinPriceService.retrieveByTimestamp(timestamp,PageRequest.of(0, 1)));
+        return iBitcoinPriceService.retrieveByTimestamp(timestamp,PageRequest.of(0, 1))
+                .switchIfEmpty(Mono.error(new TimestampNotFound()));
+
     }
 
     @GetMapping("/avg")
-    public ResponseEntity<Mono<BigDecimal>> avg(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    public Mono<BigDecimal> avg(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                                                        List<LocalDateTime> timestamp){
         log.info("Retrieving Avg Bitcoin Price between Timestamps: {}", timestamp);
-        return ResponseEntity.ok(iBitcoinPriceService.avg(timestamp));
+        return iBitcoinPriceService.avg(timestamp);
     }
 }

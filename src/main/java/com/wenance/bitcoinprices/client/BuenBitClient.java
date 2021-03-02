@@ -23,14 +23,25 @@ import java.time.LocalDateTime;
 @Profile("!test")
 public class BuenBitClient implements CommandLineRunner {
 
-    @Autowired
-    BitcoinPriceRepository repository;
+
+    private BitcoinPriceRepository repository;
+    private WebClient client;
 
     @Autowired
-    private WebClient client;
+    public void setRepository(BitcoinPriceRepository repository){
+        this.repository = repository;
+    }
+
+    @Autowired
+    public void setClient(WebClient client) {
+        this.client = client;
+    }
 
     @Value( "${buenbit.url}" )
     private String buenBitUrl;
+
+    @Value( "${buenbit.interval}" )
+    private int buenBitInterval;
 
     public Mono<BitcoinDetail> getBitcoinPrices(long maxNumRetries){
         return client.get()
@@ -46,7 +57,7 @@ public class BuenBitClient implements CommandLineRunner {
     public void run(String... args) {
         //TODO ver que función usar para que empiece ejecutando sin esperar los 10 segundos
         log.info("Entre acaaa");
-        Flux<LocalDateTime> localDateTimeFlux = Flux.interval(Duration.ofSeconds(10))
+        Flux<LocalDateTime> localDateTimeFlux = Flux.interval(Duration.ofSeconds(buenBitInterval))
                 .map(t -> LocalDateTime.now());
 
         Flux<BitcoinDetail> fluxCallApi= Flux.defer( () -> getBitcoinPrices(5)).repeat();

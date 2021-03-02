@@ -7,24 +7,27 @@ import com.wenance.bitcoinprices.repository.BitcoinPriceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 
 @Component
 @Slf4j
-@Profile("!test")
-public class BuenBitClient implements CommandLineRunner {
+public class BuenBitClient {
 
-
+    @Autowired
     private BitcoinPriceRepository repository;
+    @Autowired
     private WebClient client;
 
     @Autowired
@@ -32,16 +35,14 @@ public class BuenBitClient implements CommandLineRunner {
         this.repository = repository;
     }
 
-    @Autowired
-    public void setClient(WebClient client) {
-        this.client = client;
-    }
-
     @Value( "${buenbit.url}" )
     private String buenBitUrl;
 
     @Value( "${buenbit.interval}" )
     private int buenBitInterval;
+
+    private Flux flux;
+    private Disposable disposable;
 
     public Mono<BitcoinDetail> getBitcoinPrices(long maxNumRetries){
         return client.get()
@@ -53,15 +54,19 @@ public class BuenBitClient implements CommandLineRunner {
                 .onErrorResume( e -> Mono.empty());
     }
 
-    @Override
-    public void run(String... args) {
-        //TODO ver que función usar para que empiece ejecutando sin esperar los 10 segundos
-        log.info("Entre acaaa");
+    @PostConstruct
+    void postConstruct(){
+        log.info("@PostConstruct");
         Flux<LocalDateTime> localDateTimeFlux = Flux.interval(Duration.ofSeconds(buenBitInterval))
                 .map(t -> LocalDateTime.now());
 
         Flux<BitcoinDetail> fluxCallApi= Flux.defer( () -> getBitcoinPrices(5)).repeat();
-        localDateTimeFlux.zipWith(fluxCallApi, (timestamp, bitcoinPriceDetail) -> repository.save(new BitcoinPrice(timestamp, bitcoinPriceDetail))
-                .subscribe()).subscribe();
+        flux= localDateTimeFlux.zipWith(fluxCallApi, (timestamp, bitcoinPriceDetail) -> repository.save(new BitcoinPrice(timestamp, bitcoinPriceDetail)).subscribe());
+        disposable= flux.subscribe();
+    }
+    @PreDestroy
+    void preDestroy(){
+        log.info("@PreDestroy");
+        disposable.dispose();
     }
 }

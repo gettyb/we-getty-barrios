@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class BitcoinDetail{
-    //TODO ver como cambiar strategy en el parseo Jackson
     private String currency;
     private String bid_currency;
     private String ask_currency;

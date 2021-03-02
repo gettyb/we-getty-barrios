@@ -99,15 +99,12 @@ public class BitcoinPriceControllerTest extends BaseTests{
                 .expectStatus().isNotFound();
     }
 
-    //TODO Avg check why this test fails
-    /*
     @Test
     public void whenAvgWithSeveralTimestamps_shouldReturnValue(){
         //Given
         DateTimeFormatter formatter= DateTimeFormatter.ISO_DATE_TIME;
         List<LocalDateTime> dateTimeList= Arrays.asList(LocalDateTime.now(),LocalDateTime.now().plusSeconds(10));
         String queryParams= dateTimeList.stream().map(t -> "timestamp="+t.format(formatter)).collect(Collectors.joining("&"));
-        System.out.println("ACAAAAAAAAAAAAAAAAAAAAA -> "+queryParams);
         //When
         Mockito.when(bitcoinPriceService.avg(dateTimeList)).thenReturn(Mono.just(BigDecimal.ONE));
         //Then
@@ -116,10 +113,10 @@ public class BitcoinPriceControllerTest extends BaseTests{
                 .baseUrl("http://localhost:"+randomServerPort)
                 .build()
                 .get()
-                .uri("/bitcoin-prices/avg?{queryParams}",queryParams)
+                .uri("/bitcoin-prices/avg?"+queryParams)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(BigDecimal.class);
         verify(bitcoinPriceService, times(1)).avg(dateTimeList);
-    }*/
+    }
 }
